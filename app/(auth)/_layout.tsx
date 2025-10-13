@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { AlertProvider } from "../providers/AlertProvider";
+import { AlertProvider } from "../../providers/AlertProvider";
 
 export default function Layout() {
   return (
