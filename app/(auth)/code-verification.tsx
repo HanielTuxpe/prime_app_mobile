@@ -12,7 +12,9 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useUser } from "../../context/UserContext";
 import { useAlert } from "../../providers/AlertProvider";
+
 
 const VerificationScreen: React.FC = () => {
     const [codigo, setCode] = useState(["", "", "", "", "", ""]);
@@ -21,6 +23,8 @@ const VerificationScreen: React.FC = () => {
     const URL_Base = `https://prime-api-iawe.onrender.com`
     const { showAlert } = useAlert();
     const router = useRouter();
+    const { setMatricula } = useUser();
+
 
     const handleChange = (text: string, index: number) => {
         const newCode = [...codigo];
@@ -34,30 +38,33 @@ const VerificationScreen: React.FC = () => {
     };
 
     const handleVerify = async () => {
-        console.log("Código ingresado:", codigo.join(""));
-        console.log("Matrícula:", matricula);
         const code = codigo.join("");
+        console.log("Código ingresado:", code);
+        console.log("Matrícula:", matricula);
+
         try {
             const response = await axios.post(`${URL_Base}/CodigoVerificacion`, { matricula, code });
 
             if (response.status === 200) {
+                setMatricula(matricula); // ✅ guarda en contexto global
+                console.log("✅ Matrícula guardada en contexto:", matricula);
+
                 showAlert({
                     title: "Acceso exitoso",
                     message: "Bienvenido de nuevo",
                     type: "success",
                     autoCloseMs: 1000,
                 });
-                router.replace({ pathname: "/(tabs)", params: { matricula } });
+
+                router.replace("/(tabs)/home");
             }
         } catch (error: any) {
             console.log("Error en login:", error.response?.data || error.message);
             showAlert({
                 title: "Error en login",
-                message: error.response?.data?.error || "Ocurrió un error inesperado. Intenta de nuevo.",
+                message: error.response?.data?.error || "Ocurrió un error inesperado.",
                 type: "error",
-                autoCloseMs: 2000,
             });
-
         }
     };
 

@@ -1,10 +1,15 @@
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { AlertProvider } from "../providers/AlertProvider";
+import { UserProvider } from "../context/UserContext";
 
-export default function Layout() {
+export default function RootLayout() {
   return (
     <AlertProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <UserProvider>
+        <StatusBar hidden />
+        <Slot />
+      </UserProvider>
     </AlertProvider>
   );
 }

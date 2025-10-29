@@ -1,9 +1,8 @@
 import BottomBar from "@/components/bottom-bar";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "../../context/UserContext"; // 👈 para usar la matrícula
 import PrimeBanner from "@/components/prime-banner";
 import Header from "@/components/header"; 
@@ -11,9 +10,12 @@ import Header from "@/components/header";
 const HomeScreen: React.FC = () => {
     const [selected, setSelected] = useState("");
     const { matricula } = useUser();
+    useEffect(() => {
+        console.log("📘 Matrícula en HomeScreen:", matricula);
+    }, [matricula]);
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={{ flex: 1, backgroundColor: "#fff" }}>
 
             {/* Header con logo y título */}
             <Header />
@@ -52,7 +54,7 @@ const HomeScreen: React.FC = () => {
             </ScrollView>
             {/* Barra de navegación inferior */}
             < BottomBar />
-        </SafeAreaView >
+        </View >
     );
 };
 
