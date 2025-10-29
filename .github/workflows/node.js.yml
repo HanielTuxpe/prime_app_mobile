@@ -1,0 +1,31 @@
+name: CI - PRIME App Tests
+
+on:
+  push:
+    branches:
+      - feature/historial    #se ejecuta solo en tu rama actual
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧩 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Instalar dependencias
+        run: npm ci
+
+      - name: 🧪 Ejecutar pruebas unitarias
+        run: npm run test:unit
+
+      - name: 🧾 Mostrar resultado
+        run: echo "✅ Pruebas ejecutadas correctamente en CI"
