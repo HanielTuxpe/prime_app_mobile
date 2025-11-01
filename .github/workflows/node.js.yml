@@ -1,4 +1,4 @@
-name: CI - PRIME App Tests
+name: CI - PRIME App Tests, Build y Deploy
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - develop
 
 jobs:
   test:
@@ -20,12 +21,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
+      
       - name: 📦 Instalar dependencias
         run: npm ci
+      
+      - name: 📦 Instalar EAS CLI
+        run: npm install -g eas-cli
 
+      - name: 🔐 Autenticar en Expo
+        run: npx eas whoami
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      
       - name: 🧪 Ejecutar pruebas unitarias
         run: npm run test:unit
 
       - name: 🧾 Mostrar resultado
         run: echo "✅ Pruebas ejecutadas correctamente en CI"
+      
+      - name: 🚀 Construir y desplegar la app en EAS
+        run: |
+          npx eas build --platform android --profile preview
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

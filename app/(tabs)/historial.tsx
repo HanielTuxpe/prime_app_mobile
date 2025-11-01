@@ -1,6 +1,7 @@
 import BottomBar from "@/components/bottom-bar";
 import Header from "@/components/header";
 import StudentPDFGenerator from "@/components/student-pdf-generator";
+import StudentCard from "@/components/student-card";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
@@ -22,6 +23,13 @@ const HistorialScreen: React.FC = () => {
     const [periodos, setPeriodos] = useState<any>({});
     const [promedios, setPromedios] = useState<any>({});
     const URL_BASE = "https://prime-api-iawe.onrender.com";
+
+    const MEDALLA_PLATA = require("@/assets/images/MEDALLA_PLATA.png");
+    const MEDALLA_MORADO = require("@/assets/images/MEDALLA_MORADO.png");
+    const MEDALLA_VERDE = require("@/assets/images/MEDALLA_VERDE.png");
+    const MEDALLA_ROJA = require("@/assets/images/MEDALLA_ROJA.png");
+
+
 
     const cuatrimestreMap: Record<string, string> = {
         "1": "1er Cuatrimestre",
@@ -222,6 +230,14 @@ const HistorialScreen: React.FC = () => {
         );
     }
 
+    // Función para determinar la medalla según el promedio
+    const getEstatusImage = (promedio: number) => {
+        if (promedio >= 9) return { src: MEDALLA_PLATA, alt: "Excelente" };
+        if (promedio >= 8) return { src: MEDALLA_MORADO, alt: "Bueno" };
+        if (promedio >= 7) return { src: MEDALLA_VERDE, alt: "Regular" };
+        return { src: MEDALLA_ROJA, alt: "Necesita mejorar" };
+    };
+
     const currentData = cuatrimestresData[selectedSemester];
 
     return (
@@ -229,15 +245,24 @@ const HistorialScreen: React.FC = () => {
             <Header />
             <ScrollView contentContainerStyle={styles.scroll}>
                 {/* 🔹 Tarjeta del alumno */}
-                <LinearGradient colors={["#7b0029", "#A30052"]} style={styles.studentCard}>
-                    <Text style={styles.studentName}>
-                        {student.Nombre} {student.APaterno} {student.AMaterno}
-                    </Text>
-                    <Text style={styles.studentCareer}>{student.NombreCarrera}</Text>
-                    <Text style={styles.studentGroup}>Grupo: {student.Grupo}</Text>
-                    <Text style={styles.studentCareer}>Matricula: {student.Matricula}</Text>
-                </LinearGradient>
-
+                {selectedSemester && promedios[selectedSemester] && (
+                    (() => {
+                        const promedioCuatri = parseFloat(promedios[selectedSemester]);
+                        const estatus = getEstatusImage(promedioCuatri);
+                        return (
+                            <StudentCard
+                                nombre={student.Nombre}
+                                apaterno={student.APaterno}
+                                amaterno={student.AMaterno}
+                                carrera={student.NombreCarrera}
+                                cuatrimestre={student.Cuatrimestre}
+                                grupo={student.Grupo}
+                                estatus={estatus.alt}
+                                iconoEstatus={estatus.src}
+                            />
+                        );
+                    })()
+                )}
                 {/* 🔹 Selector de cuatrimestre */}
                 <Text style={styles.selectLabel}>Selecciona un cuatrimestre:</Text>
                 <View style={styles.pickerWrapper}>
