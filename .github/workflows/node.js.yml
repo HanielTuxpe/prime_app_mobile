@@ -41,6 +41,6 @@ jobs:
       
       - name: 🚀 Construir y desplegar la app en EAS
         run: |
-          npx eas build --platform android --profile preview
+          npx eas build --platform android --profile preview --non-interactive --no-wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
