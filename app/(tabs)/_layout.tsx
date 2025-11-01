@@ -1,47 +1,41 @@
 import { Slot, usePathname, useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Alert, BackHandler } from "react-native";
-import { UserProvider } from "../../context/UserContext";
+import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 
 export default function TabsLayout() {
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // Ocultar barra del sistema
+    NavigationBar.setVisibilityAsync("hidden");
+    NavigationBar.setBehaviorAsync("overlay-swipe");
+
     const backAction = () => {
-      // Si estamos dentro del grupo (tabs), mostrar alerta para regresar al login
       if (pathname.startsWith("/(tabs)")) {
-        Alert.alert(
-          "Cerrar sesión",
-          "¿Deseas volver a la pantalla de inicio de sesión?",
-          [
-            { text: "Cancelar", style: "cancel" },
-            {
-              text: "Sí",
-              style: "destructive",
-              onPress: () => {
-                // 🔹 Reemplaza toda la navegación y limpia el stack
-                router.replace("../(auth)/login");
-              },
-            },
-          ]
-        );
-        return true; // evita comportamiento por defecto
+        Alert.alert("Cerrar sesión", "¿Deseas volver a la pantalla de inicio de sesión?", [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Sí",
+            style: "destructive",
+            onPress: () => router.replace("./(auth)/login"),
+          },
+        ]);
+        return true;
       }
-      return false; // permite retroceso normal fuera de tabs
+      return false;
     };
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   }, [pathname]);
 
   return (
-    <UserProvider>
+    <>
+      <StatusBar hidden />
       <Slot />
-    </UserProvider>
+    </>
   );
 }

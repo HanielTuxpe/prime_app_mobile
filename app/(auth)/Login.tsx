@@ -14,6 +14,8 @@ import {
     View,
 } from "react-native";
 import { useAlert } from "../../providers/AlertProvider";
+import { validateMatricula, validatePassword } from "../../utils/validation";
+
 
 
 const LoginScreen: React.FC = () => {
@@ -26,20 +28,23 @@ const LoginScreen: React.FC = () => {
 
     const handleLogin = async () => {
 
-        if (!matricula.trim() || !password.trim()) {
+        const matriculaResult = validateMatricula(matricula);
+        const passwordResult = validatePassword(password);
+        
+        if (!matriculaResult.valid) {
             showAlert({
-                title: "Campos obligatorios",
-                message: "La matrícula y la contraseña no pueden estar vacías.",
+                title: "Validación",
+                message: matriculaResult.message,
                 type: "warning",
                 autoCloseMs: 2500,
             });
             return;
         }
 
-        if (matricula.length < 8) {
+        if (!passwordResult.valid) {
             showAlert({
-                title: "Formato inválido",
-                message: "La matrícula debe tener al menos 8 dígitos.",
+                title: "Validación",
+                message: passwordResult.message,
                 type: "warning",
                 autoCloseMs: 2500,
             });
@@ -67,10 +72,10 @@ const LoginScreen: React.FC = () => {
             }
         } catch (error: any) {
             showAlert({
-                    title: "Error en login",
-                    message: error.response?.data?.error || "Ocurrió un error inesperado. Intenta de nuevo.",
-                    type: "error",
-                    autoCloseMs: 2000,
+                title: "Error en login",
+                message: error.response?.data?.error || "Ocurrió un error inesperado. Intenta de nuevo.",
+                type: "error",
+                autoCloseMs: 2000,
             });
         }
     };
@@ -111,6 +116,8 @@ const LoginScreen: React.FC = () => {
                             style={styles.icon}
                         />
                         <TextInput
+                            accessibilityLabel="input-matricula"
+                            testID="input-matricula"
                             placeholder="Matrícula"
                             placeholderTextColor="#fff"
                             value={matricula}
@@ -135,6 +142,8 @@ const LoginScreen: React.FC = () => {
                             style={styles.icon}
                         />
                         <TextInput
+                            accessibilityLabel="input-password"
+                            testID="input-password"
                             placeholder="Contraseña"
                             placeholderTextColor="#fff"
                             value={password}
@@ -142,7 +151,10 @@ const LoginScreen: React.FC = () => {
                             style={styles.input}
                             secureTextEntry={!showPassword}   // 👈 aquí usamos el estado
                         />
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        <TouchableOpacity
+                            accessibilityLabel="btn-login"
+                            testID="btn-login"
+                            onPress={() => setShowPassword(!showPassword)}>
                             <MaterialIcons
                                 name={showPassword ? "visibility" : "visibility-off"}
                                 size={20}
@@ -199,7 +211,7 @@ const styles = StyleSheet.create({
         height: 180,
     },
     inputContainer: {
-        width: "80%",
+        width: "85%",
         marginBottom: 150,
     },
     inputWrapper: {

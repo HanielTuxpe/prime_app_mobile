@@ -15,9 +15,13 @@ type AlertOptions = {
     title?: string;
     message: string;
     type?: AlertType;
-    autoCloseMs?: number;     // opcional: cierre automático
-    actions?: AlertAction[];  // opcional: botones extra
+    autoCloseMs?: number;
+    actions?: AlertAction[];
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
 };
+
 
 type AlertContextType = {
     showAlert: (opts: AlertOptions) => void;
@@ -69,6 +73,23 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (autoTimer.current) {
             clearTimeout(autoTimer.current);
             autoTimer.current = null;
+        }
+        if (!opts.actions && (opts.confirmText || opts.cancelText)) {
+            opts.actions = [];
+
+            if (opts.cancelText) {
+                opts.actions.push({
+                    label: opts.cancelText,
+                    variant: "ghost",
+                });
+            }
+            if (opts.confirmText) {
+                opts.actions.push({
+                    label: opts.confirmText,
+                    variant: "primary",
+                    onPress: opts.onConfirm,
+                });
+            }
         }
         setOptions({
             type: "info",
