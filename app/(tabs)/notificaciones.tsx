@@ -1,15 +1,41 @@
 import BottomBar from "@/components/bottom-bar";
 import Header from "@/components/header";
+import NotificacionCard from "@/components/notificacion-card";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 const NotificacionesScreen: React.FC = () => {
+    const notificaciones = [
+        {
+            titulo: "Nueva calificación publicada",
+            descripcion: "Tu profesor ha actualizado tus calificaciones en Matemáticas.",
+            fecha: "4 Nov 2025",
+        },
+        {
+            titulo: "Recordatorio de entrega",
+            descripcion: "No olvides entregar tu proyecto final antes del 10 de Noviembre.",
+            fecha: "3 Nov 2025",
+        },
+        {
+            titulo: "Aviso de rendimiento",
+            descripcion: "Tu promedio ha mejorado en este cuatrimestre. ¡Buen trabajo!",
+            fecha: "1 Nov 2025",
+        },
+    ];
+
     return (
         <View style={styles.container}>
             <Header />
-            <View style={styles.content}>
-                <Text style={styles.text}>Aquí va el módulo de Notificaciones</Text>
-            </View>
+            <ScrollView style={styles.content}>
+                {notificaciones.map((item, index) => (
+                    <NotificacionCard
+                        key={index}
+                        titulo={item.titulo}
+                        descripcion={item.descripcion}
+                        fecha={item.fecha}
+                    />
+                ))}
+            </ScrollView>
             <BottomBar />
         </View>
     );
@@ -22,13 +48,7 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    text: {
-        fontSize: 16,
-        fontFamily: "Roboto_500Medium",
-        color: "#7b0029",
+        marginTop: 10,
     },
 });
 

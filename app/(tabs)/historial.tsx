@@ -10,6 +10,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import { useUser } from "../../context/UserContext";
 import { useAlert } from "../../providers/AlertProvider";
 import * as WebBrowser from "expo-web-browser";
+import { LoaderScreen } from "@/components/loading-screen";
 
 const URL_BASE = "";
 
@@ -28,7 +29,7 @@ const HistorialScreen: React.FC = () => {
     const MEDALLA_MORADO = require("@/assets/images/MEDALLA_MORADO.png");
     const MEDALLA_VERDE = require("@/assets/images/MEDALLA_VERDE.png");
     const MEDALLA_ROJA = require("@/assets/images/MEDALLA_ROJA.png");
-
+    const Calificaciones_Icon = require("@/assets/images/calificaciones.png");
 
 
     const cuatrimestreMap: Record<string, string> = {
@@ -212,11 +213,7 @@ const HistorialScreen: React.FC = () => {
 
     if (loading) {
         return (
-            <View style={styles.loaderContainer}>
-                <Header />
-                <ActivityIndicator size="large" color="#7b0029" />
-                <BottomBar />
-            </View>
+            <LoaderScreen iconSource={Calificaciones_Icon}/>
         );
     }
 

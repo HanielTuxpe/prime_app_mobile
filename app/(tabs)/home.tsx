@@ -1,159 +1,209 @@
 import BottomBar from "@/components/bottom-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState, useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View, ActivityIndicator } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { useUser } from "../../context/UserContext"; // 👈 para usar la matrícula
+import axios from "axios";
+import { useUser } from "../../context/UserContext";
 import PrimeBanner from "@/components/prime-banner";
-import Header from "@/components/header"; 
+import Header from "@/components/header";
+import moment from "moment";
+import ActividadModal from "@/components/actividad-card";
+
+const URL_BASE = "https://prime-api-iawe.onrender.com";
+
+interface MarkedDate {
+  selected?: boolean;
+  marked?: boolean;
+  selectedColor?: string;
+  dotColor?: string;
+  activeOpacity?: number;
+}
+
+type MarkedDates = Record<string, MarkedDate>;
+
+interface CalendarMonth {
+  dateString: string;
+  day: number;
+  month: number;
+  year: number;
+  timestamp: number;
+}
+
+const COLORES_DISPONIBLES = [
+  "#921F45", "#4CAF50", "#FF5722", "#3F51B5", "#795548",
+  "#009688", "#9C27B0", "#FF9800", "#2196F3", "#E91E63",
+  "#607D8B", "#CDDC39", "#00BCD4", "#FFC107", "#8BC34A"
+];
+
+const colorPorMateria: Record<string, string> = {};
+
+function obtenerColorMateria(nombre: string): string {
+  if (colorPorMateria[nombre]) return colorPorMateria[nombre];
+  const nuevoColor = COLORES_DISPONIBLES[
+    Object.keys(colorPorMateria).length % COLORES_DISPONIBLES.length
+  ];
+  colorPorMateria[nombre] = nuevoColor;
+  return nuevoColor;
+}
 
 const HomeScreen: React.FC = () => {
-    const [selected, setSelected] = useState("");
-    const { matricula } = useUser();
-    useEffect(() => {
-        console.log("📘 Matrícula en HomeScreen:", matricula);
-    }, [matricula]);
+  const [selected, setSelected] = useState<string>("");
+  const [markedDates, setMarkedDates] = useState<MarkedDates>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [actividadesMes, setActividadesMes] = useState<any[]>([]);
+  const [actividadesDia, setActividadesDia] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { matricula } = useUser();
 
-    return (
-        <View style={{ flex: 1, backgroundColor: "#fff" }}>
+  const getMesAPI = (month: number): number | null => {
+    const mapa: Record<number, number> = {
+      10: 1,
+      11: 2,
+      12: 3,
+    };
+    return mapa[month] || null;
+  };
 
-            {/* Header con logo y título */}
-            <Header />
+  const fetchActividades = async (month: number) => {
+    if (!matricula) return;
 
-            <ScrollView contentContainerStyle={styles.container}>
+    setIsLoading(true);
+    try {
+      const mesAPI = getMesAPI(month);
+      if (!mesAPI) {
+        setMarkedDates({});
+        return;
+      }
 
-                <PrimeBanner />
+      const response = await axios.get(`${URL_BASE}/actividadesXAlumno`, {
+        params: { Matricula: matricula, Mes: mesAPI },
+      });
 
-                {/* Calendario */}
-                <View style={styles.calendarContainer}>
-                    <Calendar
-                        onDayPress={(day) => setSelected(day.dateString)}
-                        markedDates={{
-                            [selected]: { selected: true, selectedColor: "#7b0029" },
-                        }}
-                        theme={{
-                            backgroundColor: "#fff",
-                            calendarBackground: "#fff",
-                            textSectionTitleColor: "#7b0029",
-                            selectedDayBackgroundColor: "#7b0029",
-                            selectedDayTextColor: "#fff",
-                            todayTextColor: "#E60073",
-                            arrowColor: "#7b0029",
-                            monthTextColor: "#7b0029",
-                            textMonthFontFamily: "Roboto_700Bold",
-                            textDayFontFamily: "Roboto_400Regular",
-                            textDayHeaderFontFamily: "Roboto_700Bold",
-                        }}
-                    />
-                </View>
+      const data = response.data?.data || [];
+      setActividadesMes(data);
 
-                {/* Tarjeta inferior */}
-                <LinearGradient colors={["#7b0029", "#E60073"]} style={styles.bottomCard}>
-                    <Text style={styles.bottomText}>Módulos disponibles próximamente...</Text>
-                </LinearGradient>
-            </ScrollView>
-            {/* Barra de navegación inferior */}
-            < BottomBar />
-        </View >
-    );
+      const newMarks: MarkedDates = {};
+      data.forEach((actividad: any) => {
+        const fecha = moment(actividad.FechaEntrega).year(2025).format("YYYY-MM-DD");
+        newMarks[fecha] = { marked: true, dotColor: "#5aa10f" };
+      });
+
+      if (selected) {
+        newMarks[selected] = {
+          ...(newMarks[selected] || {}),
+          selected: true,
+          selectedColor: "#7b0029",
+        };
+      }
+
+      setMarkedDates(newMarks);
+    } catch (error: any) {
+      console.error("❌ Error al obtener actividades:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMonthChange = (monthObj: CalendarMonth) => {
+    const month = monthObj.month;
+    if (month >= 10 && month <= 12) {
+      fetchActividades(month);
+    } else {
+      setMarkedDates({});
+      setActividadesMes([]);
+    }
+    setActividadesDia([]);
+  };
+
+  const handleDayPress = (day: any) => {
+    setSelected(day.dateString);
+
+    const actividades = actividadesMes.filter((act) => {
+      const fechaEntrega = moment(act.FechaEntrega).year(2025).format("YYYY-MM-DD");
+      return fechaEntrega === day.dateString;
+    });
+
+    if (actividades.length > 0) {
+      setActividadesDia(actividades);
+      setModalVisible(true);
+    } else {
+      setActividadesDia([]);
+      setModalVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    const currentMonth = new Date().getMonth() + 1;
+    fetchActividades(currentMonth);
+  }, [matricula]);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Header />
+      
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <PrimeBanner />
+
+          <View style={styles.calendarContainer}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#7b0029" style={{ marginVertical: 30 }} />
+            ) : (
+              <Calendar
+                onDayPress={handleDayPress}
+                onMonthChange={handleMonthChange}
+                markedDates={{
+                  ...markedDates,
+                  [selected]: {
+                    ...(markedDates[selected] || {}),
+                    selected: true,
+                    selectedColor: "#7b0029",
+                  },
+                }}
+                theme={{
+                  backgroundColor: "#fff",
+                  calendarBackground: "#fff",
+                  textSectionTitleColor: "#7b0029",
+                  selectedDayBackgroundColor: "#7b0029",
+                  selectedDayTextColor: "#fff",
+                  todayTextColor: "#E60073",
+                  arrowColor: "#7b0029",
+                  monthTextColor: "#7b0029",
+                  textMonthFontFamily: "Roboto_700Bold",
+                  textDayFontFamily: "Roboto_400Regular",
+                  textDayHeaderFontFamily: "Roboto_700Bold",
+                }}
+              />
+            )}
+          </View>
+
+          <ActividadModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            actividades={actividadesDia}
+            obtenerColorMateria={obtenerColorMateria}
+          />
+
+        </ScrollView>
+      <BottomBar />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        alignItems: "center",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: "100%",
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-    },
-    logo: {
-        width: 60,
-        height: 60,
-    },
-    headerTitle: {
-        color: "#fff",
-        fontSize: 14,
-        fontFamily: "Roboto_700Bold",
-        lineHeight: 18,
-    },
-    infoCard: {
-        flexDirection: "row",
-        backgroundColor: "#f9f3f3",
-        borderRadius: 12,
-        marginTop: 16,
-        marginHorizontal: 20,
-        padding: 14,
-        alignItems: "center",
-    },
-    infoBadge: {
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        marginRight: 10,
-        padding: 6,
-        elevation: 3,
-    },
-    badgeImage: {
-        width: 45,
-        height: 45,
-    },
-    infoTitle: {
-        color: "#A30052",
-        fontSize: 18,
-        fontFamily: "Roboto_700Bold",
-    },
-    infoText: {
-        color: "#7b0029",
-        fontSize: 12,
-        textAlign: "justify",
-        fontFamily: "Roboto_400Regular",
-    },
-    calendarContainer: {
-        marginTop: 16,
-        width: "90%",
-        borderRadius: 10,
-        overflow: "hidden",
-        backgroundColor: "#fff",
-        elevation: 4,
-    },
-    bottomCard: {
-        width: "90%",
-        height: 140,
-        borderRadius: 16,
-        marginTop: 30,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    bottomText: {
-        color: "#fff",
-        fontFamily: "Roboto_700Bold",
-    },
-    tabBar: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-        backgroundColor: "#7b0029",
-        paddingVertical: 10,
-        borderTopLeftRadius: 15,
-        borderTopRightRadius: 15,
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        elevation: 8,
-    },
-    tabItem: {
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    tabText: {
-        color: "#fff",
-        fontSize: 10,
-        fontFamily: "Roboto_400Regular",
-        marginTop: 3,
-    },
+  scrollContent: {
+    alignItems: "center",
+    paddingBottom: 100,
+    flex: 1,
+  },
+  calendarContainer: {
+    marginTop: 16,
+    width: "90%",
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 4,
+  },
 });
 
 export default HomeScreen;
