@@ -141,7 +141,6 @@ const styles = StyleSheet.create({
     icon: {
         width: 28,
         height: 28,
-        tintColor: "#A30052",
     },
     divider: {
         width: 1.5,
