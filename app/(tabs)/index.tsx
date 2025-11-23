@@ -1,18 +1,12 @@
-import { useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
-import { useUser } from "../../context/UserContext";
-import HomeScreen from "./home"; // tu pantalla principal real
+import { Redirect } from "expo-router";
+import { useUser } from "@/context/UserContext";
 
-export default function IndexScreen() {
-  const { matricula } = useLocalSearchParams<{ matricula?: string }>();
-  const { setMatricula } = useUser();
+export default function Index() {
+  const { matricula } = useUser();
 
-  useEffect(() => {
-    if (matricula) {
-      setMatricula(matricula);
-      console.log("✅ Matrícula guardada en contexto:", matricula);
-    }
-  }, [matricula]);
+  if (!matricula) {
+    return <Redirect href="/(auth)/Login" />;
+  }
 
-  return <HomeScreen />;
+  return <Redirect href="/(tabs)/home" />;
 }

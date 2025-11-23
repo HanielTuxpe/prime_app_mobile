@@ -1,12 +1,14 @@
-import { Slot, usePathname, useRouter } from "expo-router";
+import { Slot, usePathname, useRouter, Redirect } from "expo-router";
 import { useEffect } from "react";
 import { Alert, BackHandler } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
+import { useUser } from "@/context/UserContext";
 
 export default function TabsLayout() {
   const router = useRouter();
   const pathname = usePathname();
+  const { matricula } = useUser();
 
   useEffect(() => {
     // Ocultar barra del sistema
@@ -31,6 +33,10 @@ export default function TabsLayout() {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   }, [pathname]);
+
+  if (!matricula) {
+    return <Redirect href="/(auth)/Login" />;
+  }
 
   return (
     <>

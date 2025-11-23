@@ -9,6 +9,7 @@ import PrimeBanner from "@/components/prime-banner";
 import Header from "@/components/header";
 import moment from "moment";
 import ActividadModal from "@/components/actividad-card";
+import useExpoPushToken from "@/hooks/useExpoPushToken";
 
 const URL_BASE = "https://prime-api-iawe.onrender.com";
 
@@ -55,6 +56,8 @@ const HomeScreen: React.FC = () => {
   const [actividadesDia, setActividadesDia] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const { matricula } = useUser();
+
+  useExpoPushToken(matricula, URL_BASE);
 
   const getMesAPI = (month: number): number | null => {
     const mapa: Record<number, number> = {

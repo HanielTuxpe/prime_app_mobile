@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({
             onConfirm: async () => {
                 try {
                     await AsyncStorage.clear(); // 🔹 Limpia datos guardados (matrícula, token, etc.)
-                    router.replace("../(auth)/login"); // 🔹 Redirige al login
+                    router.replace("../(auth)/Login"); // 🔹 Redirige al login
                     showAlert({
                         type: "success",
                         title: "Sesión cerrada",
