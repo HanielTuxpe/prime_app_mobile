@@ -4,10 +4,11 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface NotificacionCardProps {
     titulo: string;
-    descripcion: string;
+    descripcion?: string;
     fecha: string;
     icono?: any;
-    onPress?: () => void;
+    leida?: boolean;
+    onMarkRead?: () => void;
 }
 
 const NotificacionCard: React.FC<NotificacionCardProps> = ({
@@ -15,52 +16,60 @@ const NotificacionCard: React.FC<NotificacionCardProps> = ({
     descripcion,
     fecha,
     icono,
-    onPress,
+    leida,
+    onMarkRead
 }) => {
     return (
-        <TouchableOpacity style={styles.touchable} onPress={onPress} activeOpacity={0.8}>
+        <View style={styles.wrapper}>
             <LinearGradient
                 colors={["#7b0029", "#A30052"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.card}
             >
+                {/* ICONO */}
                 <View style={styles.iconContainer}>
-                    {icono ? (
-                        <Image source={icono} style={styles.icon} />
-                    ) : (
-                        <Image
-                            source={require("@/assets/images/notificacion.png")}
-                            style={styles.icon}
-                        />
-                    )}
+                    <Image
+                        source={icono || require("@/assets/images/notificacion.png")}
+                        style={styles.icon}
+                    />
                 </View>
 
+                {/* TEXTO */}
                 <View style={styles.textContainer}>
                     <Text style={styles.titulo}>{titulo}</Text>
                     <Text style={styles.descripcion}>{descripcion}</Text>
                     <Text style={styles.fecha}>{fecha}</Text>
                 </View>
+
+                {/* BOTÓN ABAJO DERECHA */}
+                {!leida && onMarkRead && (
+                    <TouchableOpacity style={styles.button} onPress={onMarkRead}>
+                        <Text style={styles.buttonText}>Marcar como leída</Text>
+                    </TouchableOpacity>
+                )}
             </LinearGradient>
-        </TouchableOpacity>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    touchable: {
+    wrapper: {
         marginHorizontal: 10,
         marginVertical: 6,
     },
     card: {
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         borderRadius: 16,
         padding: 12,
+        paddingBottom: 40, // espacio para el botón
         elevation: 3,
         shadowColor: "#000",
         shadowOpacity: 0.15,
         shadowRadius: 4,
         shadowOffset: { width: 0, height: 2 },
+        position: "relative"
     },
     iconContainer: {
         backgroundColor: "rgba(255,255,255,0.2)",
@@ -94,6 +103,23 @@ const styles = StyleSheet.create({
         marginTop: 4,
         textAlign: "right",
     },
+
+    button: {
+        position: "absolute",
+        bottom: 8,
+        right: 12,
+        backgroundColor: "rgba(255,255,255,0.25)",
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.3)",
+    },
+    buttonText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 12,
+    }
 });
 
 export default NotificacionCard;

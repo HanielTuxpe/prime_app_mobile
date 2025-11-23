@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "prime_app",
+    "name": "PRIME MOBILE",
     "slug": "prime_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "primeapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

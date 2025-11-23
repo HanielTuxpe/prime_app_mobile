@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - feature/historial    #se ejecuta solo en tu rama actual
+   
   pull_request:
     branches:
       - main
       - develop
+      - release
 
 jobs:
   test:

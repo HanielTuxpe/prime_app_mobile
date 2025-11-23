@@ -4,15 +4,12 @@ import StudentPDFGenerator from "@/components/student-pdf-generator";
 import StudentCard from "@/components/student-card";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useUser } from "../../context/UserContext";
 import { useAlert } from "../../providers/AlertProvider";
 import * as WebBrowser from "expo-web-browser";
 import { LoaderScreen } from "@/components/loading-screen";
-
-const URL_BASE = "";
 
 const HistorialScreen: React.FC = () => {
     const { matricula } = useUser();
@@ -196,11 +193,14 @@ const HistorialScreen: React.FC = () => {
                 }),
             });
 
-            if (!response.ok) throw new Error("No se pudo generar el historial");
+            const data = await response.json();
+            if (!data.success) throw new Error("Error al generar historial");
 
-            const blob = await response.blob();
-            const pdfUrl = URL.createObjectURL(blob);
-            await WebBrowser.openBrowserAsync(pdfUrl);
+            console.log("✅ Historial generado:", data);
+
+            const url = `${URL_BASE}/downloadBoletaPDF/?file=${encodeURIComponent(data.fileName)}`;
+            await WebBrowser.openBrowserAsync(url);
+
         } catch (error) {
             console.error("❌ Error al generar historial:", error);
             showAlert({
@@ -211,9 +211,10 @@ const HistorialScreen: React.FC = () => {
         }
     };
 
+
     if (loading) {
         return (
-            <LoaderScreen iconSource={Calificaciones_Icon}/>
+            <LoaderScreen iconSource={Calificaciones_Icon} />
         );
     }
 
