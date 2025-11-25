@@ -3,7 +3,8 @@ name: CI - PRIME App Tests, Build y Deploy
 on:
   push:
     branches:
-      - feature/historial    #se ejecuta solo en tu rama actual
+      - feature/historial
+      - develop
    
   pull_request:
     branches:
